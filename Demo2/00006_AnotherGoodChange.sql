@@ -1,0 +1,6 @@
+CREATE PROCEDURE dbo.usp_GoodChange2 AS
+BEGIN
+
+SELECT TOP 1 * FROM Orders;
+
+END

@@ -1,0 +1,80 @@
+DROP TABLE Users;
+ALTER TABLE Orders DROP COLUMN UserId;
+DROP PROC usp_GetOrderTotalsByDayOfWeek;
+DROP TABLE MaintenanceMode;
+DROP TABLE UpdateTracking;
+
+
+DEMO 1
+=============
+
+CI Config
+------------
+
+1: VCS Settings
+
+
+
+
+1A: Create Batch Update
+error output: error
+File
+Tools/CreateDatabaseUpdates.ps1
+-File
+-UpdatesFolder "Changes" -UpdatesFile "UpdatesBatch.sql"
+
+1B: Apply Updates
+error output: error
+File
+Tools/ApplyDatabaseUpdates.ps1
+-File
+-UpdatesFile "UpdatesBatch.sql" -Server 192.168.100.2 -Database "CI_DeployPresentation" -AdminUserName "dbpres" -AdminPassword "dbpres"
+
+Prod Config
+--------------------
+
+same VCS
+dependencies - snapshot + artifact: Updatesbatch.sql
+powershell step: Apply Updates, change DB
+-UpdatesFile "UpdatesBatch.sql" -Server 192.168.100.2 -Database "PROD_DeployPresentation" -AdminUserName "dbpres" -AdminPassword "dbpres"
+
+
+Artifact Clean-up: Admin, Build History Clean-up, Configure rules, select project, inherited from top-level
+
+
+DEMO 2 Maintenance Mode
+==============================
+
+Make sure you have already run 00005_MaintenanceTable.sql
+
+CI: Set Maintenance Mode
+Copy SetMaintenanceMode script to tools folder
+-SetOffline -Notes "Applying Build %build.number%" -Server 192.168.100.2 -Database "CI_DeployPresentation" -AdminUserName "dbpres" -AdminPassword "dbpres"
+-Notes "Done Build %build.number%" -Server 192.168.100.2 -Database "CI_DeployPresentation" -AdminUserName "dbpres" -AdminPassword "dbpres"
+
+Run
+SELECT * FROM MaintenanceMode ORDER BY Id DESC;
+
+PROD:
+Copy steps from CI to prod, reorder, change DB names
+
+
+
+Backup/Restore
+------------------------
+Create second git repo
+
+backup prod to E:\backups\PROD_DeployPresentation.bak
+
+CI Restore:
+
+1A: Restore script:
+error output: error
+File
+Tools/ApplyDatabaseUpdates.ps1
+-File
+-Server 192.168.100.2 -Database "CI_DeployPresentation" -AdminUserName "dbpres" -AdminPassword "dbpres" -RemoteBackupsDir "\\PLC026-DB01\Backups" -LocalBackupsDir "C:\Database\Backups" -DbFileBasePath "C:\Database\DATA" -SourceDbBaseFileName "MvcMusicStoreGen"
+
+Decision: Implement file sharing or hard code a DB name
+
+Artifact Dependency on CI?
