@@ -47,7 +47,7 @@ try{
         Invoke-SqlCmd -InputFile "$UpdatesFile" -ServerInstance "$Server" -Username "$AdminUserName" -Password "$AdminPassword" -Database "$Database" -Verbose -ErrorAction Stop
     }
 
-    Write-Host "Applied updates succesfully."
+    Write-Host "Applied updates successfully."
 }
 catch [System.Exception]{
     Write-Host "##teamcity[buildStatus status='FAILURE' text='ApplyDatabaseUpdates Failed with $($_.Exception.GetType().Name)']"
